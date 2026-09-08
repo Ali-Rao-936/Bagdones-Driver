@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client_provider.dart';
+import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../data/auth_repository.dart';
@@ -41,7 +42,28 @@ class AuthNotifier extends Notifier<AuthState> {
     return const AuthState.unknown();
   }
 
+  /// Re-runs startup. The splash screen's Retry button calls this
+  /// after a failed connectivity check. Safe to touch `state` here —
+  /// unlike `_bootstrap`, this only ever runs after build().
+  Future<void> retry() async {
+    state = state.copyWith(errorMessage: null);
+    await _bootstrap();
+  }
+
   Future<void> _bootstrap() async {
+    // Nothing may read `state` before the first await: _bootstrap is
+    // kicked off from build(), which has not yet returned the initial
+    // value, and reading it there throws "uninitialized provider".
+    final isOnline = await ref.read(connectivityServiceProvider).hasConnection();
+
+    // Offline: leave status at `unknown` on purpose. The router pins
+    // that state to /splash, so the app holds there instead of
+    // dropping to Login and offering a sign-in that cannot succeed.
+    if (!isOnline) {
+      state = state.copyWith(errorMessage: 'No internet connection');
+      return;
+    }
+
     final token = await _storage.readToken();
     if (token == null) {
       state = state.copyWith(status: AuthStatus.unauthenticated);

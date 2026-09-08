@@ -123,6 +123,24 @@ therefore catches both — `on ApiException` (surface the message) and bare `cat
 "unexpected response") — and `LoginScreen` reads `authProvider`'s `errorMessage` rather than
 inventing its own text. Don't collapse these back into one generic "login failed" message.
 
+### Startup is gated on reachability
+
+`_bootstrap` probes the backend before anything else. Offline, it leaves status at
+`unknown` and sets `errorMessage` — the router already pins `unknown` to `/splash`, so the
+app holds there rather than dropping to a Login form that cannot succeed. `SplashScreen`
+renders that message with a Retry that calls `AuthNotifier.retry()`.
+
+`ConnectivityService` asks "can we reach the backend?", not "is there an interface?": it
+GETs `EnvConfig.baseUrl` with `validateStatus: (_) => true`, so any HTTP response counts as
+online and only a `DioException` means offline. It uses its own bare `Dio` on purpose —
+probing through the shared `ApiClient` would attach the auth header and route a 401 into
+`onUnauthorized`, logging the driver out.
+
+**Anything kicked off from a Riverpod `Notifier.build()` must not touch `state` before its
+first `await`.** `build()` has not returned the initial value yet, so reading `state` throws
+"Tried to read the state of an uninitialized provider". `_bootstrap` awaits the probe before
+assigning; `retry()` does the error-clearing because it only ever runs post-init.
+
 ### Push notifications (FCM)
 
 `core/notifications/push_service.dart` wraps `FirebaseMessaging` so nothing else imports it
@@ -135,7 +153,8 @@ directly. Three things in it are load-bearing and easy to break:
    `requestPermission()` returns, and `getToken()` throws `apns-token-not-set` if called
    first. `_awaitApnsToken()` polls for it. The wait is gated to iOS/macOS —
    `getAPNSToken()` always returns null on Android, so running it there would stall and
-   then skip the token entirely.
+   then skip the token entirely. (iOS 26 simulators *can* register for push, so they are
+   usable for FCM testing — older ones could not.)
 3. **`setForegroundNotificationPresentationOptions`** is what makes iOS show a banner while
    the app is foregrounded. Android ignores it: a foreground push there fires `onMessage`
    with no visible notification, which is correct, not a bug. Showing one would need
