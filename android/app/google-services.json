@@ -1,0 +1,162 @@
+{
+  "project_info": {
+    "project_number": "775077081963",
+    "project_id": "bagdones-e-c-bv",
+    "storage_bucket": "bagdones-e-c-bv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:a58139c4ba5c2c2d60122e",
+        "android_client_info": {
+          "package_name": "com.b_e_c.bv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:893fcf81bb51320c60122e",
+        "android_client_info": {
+          "package_name": "com.b_e_c.sv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:8fde7392eddefe0f60122e",
+        "android_client_info": {
+          "package_name": "com.b_e_c1.bv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:67d9752bdaa1387160122e",
+        "android_client_info": {
+          "package_name": "com.b_e_c2.bv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:4e32b68c01ee738a60122e",
+        "android_client_info": {
+          "package_name": "com.b_e_c_approtunity.bv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:52e54bb6a5f1ca8660122e",
+        "android_client_info": {
+          "package_name": "com.bagdones.delivery"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:be3ee97e6e18566b60122e",
+        "android_client_info": {
+          "package_name": "com.bgdones_e_commerce.rest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:775077081963:android:30b00820c0f25d3960122e",
+        "android_client_info": {
+          "package_name": "com.stores.sv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZYbVDVscHjYgt8iUBuE2JAehGfy9K_pA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
