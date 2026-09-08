@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/locale/locale_provider.dart';
-import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_client_provider.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../data/auth_repository.dart';
@@ -37,13 +36,7 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     _storage = SecureStorageService();
-    _repository = AuthRepository(
-      ApiClient(
-        getToken: _storage.readToken,
-        getLocale: () => ref.read(localeProvider).languageCode,
-        onUnauthorized: _handleUnauthorized,
-      ),
-    );
+    _repository = AuthRepository(ref.read(apiClientProvider));
     _bootstrap();
     return const AuthState.unknown();
   }
@@ -59,6 +52,13 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(status: AuthStatus.authenticated, driver: driver);
     } on ApiException {
       await _storage.clearToken();
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+    } catch (e) {
+      // Not an auth failure — the call worked, we just couldn't read
+      // the response. Keep the token (it may well still be valid) but
+      // resolve the status anyway: leaving it `unknown` strands the
+      // app on the splash screen with no way forward.
+      debugPrint('Session restore failed to parse /delivery/me: $e');
       state = state.copyWith(status: AuthStatus.unauthenticated);
     }
   }
@@ -99,8 +99,9 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  Future<void> _handleUnauthorized() async {
-    await _storage.clearToken();
+  /// Called by [apiClientProvider] when any request 401s. That
+  /// callback clears the token itself, so this only resets state.
+  void forceLogout() {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }

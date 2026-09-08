@@ -29,7 +29,8 @@ class AuthRepository {
   /// session on app launch if a token is already stored.
   Future<Driver> fetchMe() async {
     final response = await _client.get('/delivery/me');
-    return Driver.fromJson(_client.unwrap(response));
+    final data = _client.unwrap(response);
+    return Driver.fromJson(data['delivery_man'] as Map<String, dynamic>);
   }
 
   /// POST /delivery/auth/logout — revokes only the current device's
