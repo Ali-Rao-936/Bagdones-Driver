@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/home/presentation/screens/home_shell.dart';
+import '../../features/splash/presentation/screens/splash_screen.dart';
 
 /// Bridges [authProvider] to something GoRouter can listen to.
 ///
@@ -38,22 +39,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     refreshListenable: refresh,
     redirect: (context, state) {
       final auth = ref.read(authProvider);
-      final loggingIn = state.matchedLocation == '/login';
+      final location = state.matchedLocation;
 
       switch (auth.status) {
         case AuthStatus.unknown:
-          return null; // splash/loading — stay put until we know
+          return location == '/splash' ? null : '/splash';
         case AuthStatus.unauthenticated:
-          return loggingIn ? null : '/login';
+          return location == '/login' ? null : '/login';
         case AuthStatus.authenticated:
-          return loggingIn ? '/home' : null;
+          return location == '/home' ? null : '/home';
       }
     },
     routes: [
+      GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/home', builder: (context, state) => const HomeShell()),
     ],
