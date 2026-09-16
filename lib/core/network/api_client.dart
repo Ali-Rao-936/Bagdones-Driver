@@ -131,7 +131,7 @@ class ApiClient {
 /// printed, and bodies are truncated so a large order list doesn't
 /// flood the console.
 class _DebugLogInterceptor extends Interceptor {
-  static const _bodyLimit = 1000;
+  static const _bodyLimit = 5000;
   static const _redactedKeys = {'password', 'token', 'access_token'};
 
   @override

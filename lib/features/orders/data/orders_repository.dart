@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_client_provider.dart';
 import '../domain/order.dart';
+import '../domain/order_detail.dart';
 
 class OrdersRepository {
   OrdersRepository(this._client);
@@ -46,9 +47,30 @@ class OrdersRepository {
       hasMore: currentPage < totalPages,
     );
   }
+
+  /// PATCH /delivery/orders/{id}/deliver — the only status transition
+  /// the driver app can make. Backend enforces: 403 if inactive/not
+  /// your order, 400 if already Delivered, 422 if status isn't
+  /// In_Delivery yet — all three already surface as typed
+  /// ApiExceptions with the backend's own message via ApiClient.
+  Future<void> markDelivered(int orderId) async {
+    await _client.patch('/delivery/orders/$orderId/deliver');
+  }
+
+  /// GET /delivery/orders/{id} — the richer single-order view (store/
+  /// client contact, items, note) for the Order Details screen.
+  /// Assumes the envelope puts the order fields directly under
+  /// 'data' with no further nesting (unlike login's data.delivery_man)
+  /// — unverified. If this throws the familiar "Null is not a
+  /// subtype of Map" error, print(response.data) here same as before.
+  Future<OrderDetail> fetchOrderDetail(int orderId) async {
+    final response = await _client.get('/delivery/orders/$orderId');
+    final data = _client.unwrap(response);
+    return OrderDetail.fromJson(data);
+  }
 }
 
-/// Shared across History and (later) the Live tab — both hit the
+/// Shared across History and the Live tab — both hit the
 /// same endpoint, just filtered differently.
 final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
   return OrdersRepository(ref.read(apiClientProvider));
