@@ -21,9 +21,13 @@ lib/
     network/    ApiClient (Dio + interceptors), ApiException hierarchy
     router/     GoRouter setup, auth-driven redirects
     storage/    SecureStorageService — the auth token
+    notifications/  PushService — FCM permission, token, message streams
     locale/     English/Arabic locale state
   features/
     auth/       Driver model, AuthRepository (login / me / logout), AuthNotifier
+    orders/     Order models, OrdersRepository, Live + History + detail providers
+    settings/   Profile, Language, Help, About
+    splash/     Shown while the session and connectivity are resolved
     home/       3-tab shell: Live, History, Settings
 test/           widget tests
 ```
@@ -52,16 +56,27 @@ timings; tokens and passwords are redacted and bodies truncated.
 
 ## Current state
 
-The plumbing is real and works end-to-end: login against the live backend, token
-persistence, session restore, auth-driven routing. The UI is minimal on purpose.
+Working end to end against the live backend, verified on real orders and real
+devices: login and session restore, a splash that holds when offline, the Live
+tab (30s polling, new-order detection, mark delivered), History, Order Details,
+Settings with its four sub-screens, and push notifications on both platforms.
 
 Still to build:
-- Live tab — order polling and new-order detection (banner + sound)
-- History tab — paginated order list
-- Settings tab — profile, language switcher, help
-- Order Details screen, shared by Live and History
+- Sending the FCM token to the backend — no endpoint exists for it yet
+- Turn-by-turn navigation. `google_maps_link` is a `?q=lat,lng` pin, so it drops
+  a marker rather than starting directions; the response carries `geo_location`
+  if we want to build a real directions URL
+- A currency prefix on amounts — they render as bare numbers
 - Real visual design for Login; it's functional, not designed
-- FCM push, which needs a matching backend change
+
+Open questions for the backend:
+- `selected_choices_string` sometimes holds a genuine item option ("Pistachio")
+  and sometimes the store name ("Primo Supermarket"), within the same order,
+  while the typed `compulsory_choices`/`multiple_choices` lists stay empty
+- No `?status=` filter on `/delivery/orders`, so Live and History both fetch
+  everything and filter client-side
+- `delivered_at` has no timezone marker, unlike `created_at` — so it may be
+  UTC being rendered as local
 
 ## Development
 

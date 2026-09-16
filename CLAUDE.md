@@ -7,11 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Zaytoon rider/driver app (`zaytoon_rider`) — a Flutter app for delivery drivers. Talks to
 `https://api.zaytoon.xyz/api/v1.0`. Platforms generated: android, ios, web.
 
-Working end to end: auth, networking, routing, secure storage, splash, the Settings tab
-with its four sub-screens, the History tab against real order data, and Firebase Cloud
-Messaging on both platforms. Still TODO — the Live tab (order polling + new-order
-detection), the Order Details screen, sending the FCM token to the backend (no endpoint
-yet), and real visual design for Login.
+Working end to end and verified against real orders: auth, networking, routing, secure
+storage, splash (including an offline hold), Settings with its four sub-screens, Live
+(30s polling, new-order detection, mark delivered), History, Order Details, and Firebase
+Cloud Messaging on both platforms. Still TODO — sending the FCM token to the backend (no
+endpoint yet), turn-by-turn navigation, a currency prefix on amounts, and real visual
+design for Login.
 
 **App identifiers differ per platform, deliberately.** Android is `com.bagdones.delivery`;
 iOS is `com.bagdones.d`. The original iOS bundle ID is permanently registered to a
@@ -111,6 +112,26 @@ real shape from the debug interceptor's logged body before writing `fromJson`.
 Also note `unwrap()` casts the unwrapped value to `Map<String, dynamic>` — an endpoint
 returning a bare list under `data` will throw.
 
+### The orders API disagrees with its documentation
+
+Every field below was corrected against a real response, not the doc. Do not "fix" these
+back to the documented names — the documented names return null, and the failure is
+silent because `refresh()` catches everything.
+
+- **Money is a JSON string**: `"delivery_fee": "1.23"`, same for `total`, `price`,
+  `profit_amount`. A plain `as num` throws and kills the whole list parse. Use
+  `core/network/json_coerce.dart` (`asDouble`/`asInt`/`asDate`) for anything numeric or
+  date-like coming off this API.
+- `google_maps_link`, not `google_maps_url`.
+- **There is no `client` object.** The customer is flattened into `client_address`,
+  `client_phone`, `client_notes`, and no customer *name* is exposed to drivers — the
+  "Delivery to" label falls back to the delivery area.
+- The store's phone is `phone_number`, not `phone`.
+- The order timestamp is `date`. `delivered_at` only appears once an order completes, and
+  carries no timezone marker (unlike `created_at`), so it may be UTC rendered as local.
+- Items *do* carry `name` — the doc omitted it.
+- Timestamps are space-separated, not strict ISO-8601. `DateTime.tryParse` handles it.
+
 ### Errors: ApiException vs everything else
 
 `_mapError` turns `DioException`s into a sealed `ApiException` hierarchy (`Unauthorized`,
@@ -140,6 +161,32 @@ probing through the shared `ApiClient` would attach the auth header and route a 
 first `await`.** `build()` has not returned the initial value yet, so reading `state` throws
 "Tried to read the state of an uninitialized provider". `_bootstrap` awaits the probe before
 assigning; `retry()` does the error-clearing because it only ever runs post-init.
+
+### Orders: Live, History, Details
+
+All three read the same `GET /delivery/orders` and filter client-side — Live keeps
+`status != 'Delivered'`, History keeps `Delivered` — because the endpoint has no `?status=`
+filter. Live polls every 30s and also refreshes on a foreground push, via the stream
+`PushService` exposes rather than touching `firebase_messaging` directly.
+
+New-order detection only flags orders that appear on a *later* poll; on first load
+everything would otherwise be "new".
+
+`orderDetailProvider` is **`autoDispose` on purpose**. Cached, it showed whatever status an
+order had when first opened — a delivered order still reading "Accepted", offering a Mark
+Delivered button the backend would reject. Order status moves underneath the app, so each
+visit must refetch.
+
+Mark Delivered is the driver's only legal transition, and the button renders only for
+`In_Delivery`. On success the order is removed from Live immediately and `historyProvider`
+is invalidated, so it is already in History when the driver switches tabs.
+
+Amounts shown to the driver are the order **total**, not `delivery_fee` — the total is what
+they collect at the door; the fee is only their own cut.
+
+`url_launcher` needs `<queries>` entries in `AndroidManifest.xml` for both `https` and `tel`.
+Without them `launchUrl` returns false on Android 11+ and the Call/Navigate buttons do
+nothing, with no error.
 
 ### Push notifications (FCM)
 
@@ -189,19 +236,29 @@ Reuse this pattern for new forms.
 - Settings sub-screens use plain `Navigator.push`, not go_router routes. They sit on top of a tab
   inside `HomeShell` and play no part in the auth redirect logic. Pageless routes are torn down
   with the page beneath them, so a 401 while on Profile still lands correctly on Login.
-- `HomeShell` builds all three tabs eagerly via `IndexedStack`, so `historyProvider` fires its
-  first request the moment the app reaches `/home` — not when the tab is opened.
+- `HomeShell` builds tabs **lazily** — a tab is constructed on first visit, then kept mounted so
+  Live keeps polling in the background. Building them all up front (plain `IndexedStack`) made Live
+  and History fire two identical `GET /delivery/orders` at startup. Note `IndexedStack` renders
+  unselected children offstage, so widget tests need `skipOffstage: false` to see them.
 
 ## Known traps
 
-- **`redirect`'s `authenticated` branch sends every non-`/home` location to `/home`.** Fine for
-  today's three routes; it will make `/orders/:id` unreachable when Order Details lands.
+- **`redirect`'s `authenticated` branch sends every non-`/home` location to `/home`.** Not biting
+  yet only because Order Details is pushed with `Navigator.push` rather than a go_router route —
+  any real route added under an authenticated session will be unreachable.
 - **History filters `status == 'Delivered'` client-side while `hasMore` comes from the unfiltered
   paginator.** A page with no delivered orders renders the empty state instead of the `ListView`,
   so the scroll controller never attaches and `loadMore()` can never fire — later pages become
   unreachable. A backend `?status=` filter is the real fix.
-- **`Order.fromJson` has never parsed a real order** (the test account has none), so its field
-  mappings and the `'Delivered'` string are unverified guesses.
+- **Item choices are inconsistent upstream.** `compulsory_choices`/`multiple_choices` come back
+  empty while the real selection sits in `selected_choices_string` — which holds a genuine option
+  ("Pistachio") for one item and the store name ("Primo Supermarket") for another *in the same
+  order*. The typed lists win when present, the summary string is the fallback; nothing client-side
+  can tell the two cases apart.
+- **History's scroll listener fires immediately on a short list.** `pixels >= maxScrollExtent - 200`
+  is `0 >= -200`, so `loadMore()` triggers as soon as the `ListView` attaches. Lazy tabs delay it
+  until the tab is opened, and `hasMore` guards it below one page — but the threshold itself is
+  still wrong.
 - **`_bootstrap` calls `readToken()` outside its try/catch.** `flutter_secure_storage` can throw on
   Android after an algorithm change; if it does, `state` is never assigned, auth stays `unknown`,
   and the splash redirect strands the app there permanently.
