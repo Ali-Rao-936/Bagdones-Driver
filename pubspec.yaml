@@ -20,11 +20,27 @@ dependencies:
   package_info_plus: ^8.0.0
   firebase_core: ^4.14.0
   firebase_messaging: ^16.6.0
+  flutter_slidable: ^3.1.1
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
+
+# Regenerate platform icons after changing the source image:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: assets/images/rider_icon.png
+  android: ic_launcher
+  ios: true
+  # iOS rejects icons with an alpha channel; flatten onto white to
+  # match the sticker's own background.
+  remove_alpha_ios: true
+  background_color_ios: "#ffffff"

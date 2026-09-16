@@ -83,6 +83,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Image.asset(
+                  'assets/images/rider_icon.png',
+                  height: 160,
+                  // Reserve the space if the asset ever fails to load,
+                  // so the form doesn't jump up the screen.
+                  errorBuilder: (context, error, stack) =>
+                      const SizedBox(height: 160),
+                ),
+                const SizedBox(height: 8),
                 Text('Zaytoon Driver',
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 32),
