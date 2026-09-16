@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../orders/domain/order.dart';
 import '../../../orders/presentation/providers/history_provider.dart';
+import '../../../orders/presentation/screens/order_details_screen.dart';
 
 class HistoryTab extends ConsumerStatefulWidget {
   const HistoryTab({super.key});
@@ -116,10 +117,9 @@ class _HistoryOrderCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          // TODO: push OrderDetailsScreen(orderId: order.id) — next
-          // thing to build once History itself is confirmed working.
-        },
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => OrderDetailsScreen(orderId: order.id)),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
@@ -160,10 +160,12 @@ class _HistoryOrderCard extends StatelessWidget {
                   ],
                 ),
               ),
+              // Order total, matching the Live card — what the rider
+              // collected, not their own delivery fee.
               // TODO: prefix with the actual currency once confirmed
               // — showing the raw number for now.
               Text(
-                order.deliveryFee.toStringAsFixed(2),
+                order.total.toStringAsFixed(2),
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             ],

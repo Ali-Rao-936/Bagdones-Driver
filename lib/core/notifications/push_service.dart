@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -29,9 +31,24 @@ class PushService {
 
   String? _token;
 
+  final _foregroundMessages = StreamController<RemoteMessage>.broadcast();
+
   /// The current FCM registration token, or null if permission was
   /// denied or the platform hasn't issued one yet.
   String? get token => _token;
+
+  /// Foreground pushes, re-broadcast so features can react without
+  /// importing firebase_messaging themselves. Broadcast because more
+  /// than one screen may want them.
+  Stream<RemoteMessage> get onForegroundMessage => _foregroundMessages.stream;
+
+  /// TODO: POST the token to the backend once an endpoint exists to
+  /// register it against — see README, needs a backend change.
+  void registerDeviceToken(String token) {
+    debugPrint('TODO: send device token to backend: $token');
+  }
+
+  void dispose() => _foregroundMessages.close();
 
   /// Requests notification permission, resolves the FCM token, and
   /// subscribes to the three message streams.
@@ -96,14 +113,14 @@ class PushService {
       // Only in debug: the token identifies this specific install,
       // and it's needed to send a test push from the Firebase console.
       if (kDebugMode) debugPrint('FCM token: $_token');
+      if (_token != null) registerDeviceToken(_token!);
     } catch (e) {
       debugPrint('FCM token unavailable: $e');
     }
 
     FirebaseMessaging.onMessage.listen((message) {
-      // TODO: Live tab — this is where the new-order banner and sound
-      // get triggered.
       debugPrint('FCM foreground message: ${message.messageId} ${message.data}');
+      if (!_foregroundMessages.isClosed) _foregroundMessages.add(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
@@ -113,4 +130,8 @@ class PushService {
   }
 }
 
-final pushServiceProvider = Provider<PushService>((ref) => PushService());
+final pushServiceProvider = Provider<PushService>((ref) {
+  final service = PushService();
+  ref.onDispose(service.dispose);
+  return service;
+});
