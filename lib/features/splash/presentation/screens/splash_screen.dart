@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Shown while [AuthNotifier] is checking connectivity and looking for
 /// a stored session on launch (AuthStatus.unknown).
@@ -15,8 +16,12 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final auth = ref.watch(authProvider);
-    final offlineMessage = auth.errorMessage;
+    // The notifier has no BuildContext, so its errorMessage is only a
+    // signal that the connectivity probe failed — the wording lives
+    // here where it can be translated.
+    final isOffline = auth.errorMessage != null;
 
     return Scaffold(
       body: Center(
@@ -25,12 +30,12 @@ class SplashScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Zaytoon Driver',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              Text(
+                l10n.appTitle,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
-              if (offlineMessage == null)
+              if (!isOffline)
                 const CircularProgressIndicator()
               else ...[
                 Icon(
@@ -40,14 +45,14 @@ class SplashScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  offlineMessage,
+                  l10n.splashNoInternet,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Theme.of(context).colorScheme.outline),
                 ),
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: () => ref.read(authProvider.notifier).retry(),
-                  child: const Text('Try again'),
+                  child: Text(l10n.splashRetry),
                 ),
               ],
             ],

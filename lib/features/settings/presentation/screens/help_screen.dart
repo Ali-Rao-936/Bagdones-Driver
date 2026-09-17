@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 /// Static content for now — revisit if you want a real FAQ or a
 /// WhatsApp/call link to support instead.
 class HelpScreen extends StatelessWidget {
@@ -7,25 +9,28 @@ class HelpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    const headingStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Help')),
-      body: const Padding(
-        padding: EdgeInsets.all(16),
+      appBar: AppBar(title: Text(l10n.helpTitle)),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Getting an order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              SizedBox(height: 8),
-              Text("Orders are assigned to you by the dispatch team. You'll see them appear on the Live tab."),
-              SizedBox(height: 20),
-              Text('Marking an order delivered', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              SizedBox(height: 8),
-              Text('Open the order from the Live tab and tap Mark delivered once you have handed it to the customer.'),
-              SizedBox(height: 20),
-              Text('Need more help?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              SizedBox(height: 8),
-              Text('Contact your dispatcher directly for now.'),
+              Text(l10n.helpGettingOrderTitle, style: headingStyle),
+              const SizedBox(height: 8),
+              Text(l10n.helpGettingOrderBody),
+              const SizedBox(height: 20),
+              Text(l10n.helpMarkDeliveredTitle, style: headingStyle),
+              const SizedBox(height: 8),
+              Text(l10n.helpMarkDeliveredBody),
+              const SizedBox(height: 20),
+              Text(l10n.helpMoreTitle, style: headingStyle),
+              const SizedBox(height: 8),
+              Text(l10n.helpMoreBody),
             ],
           ),
         ),

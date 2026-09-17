@@ -1,0 +1,106 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Zaytoon Driver",
+
+  "splashNoInternet": "No internet connection",
+  "splashRetry": "Try again",
+
+  "loginPhoneLabel": "Phone number",
+  "loginPhoneHint": "+9627xxxxxxxx",
+  "loginPasswordLabel": "Password",
+  "loginButton": "Log in",
+  "loginPhoneRequired": "Phone number is required",
+  "loginPhoneInvalid": "Enter a valid phone number",
+  "loginPasswordRequired": "Password is required",
+  "loginPasswordTooShort": "Password must be at least 6 characters",
+  "loginFailed": "Login failed — check your phone and password",
+  "loginUnexpectedResponse": "Unexpected response from server. Please try again.",
+
+  "tabLive": "Live",
+  "tabHistory": "History",
+  "tabSettings": "Settings",
+
+  "liveTitle": "Live orders",
+  "liveEmpty": "No live orders right now",
+  "liveError": "Could not load live orders — pull to retry",
+  "liveNewBadge": "New",
+  "liveView": "View",
+  "liveMarkDelivered": "Mark delivered",
+  "liveMarkDeliveredFailed": "Could not mark as delivered",
+  "liveAssignedJustNow": "Assigned just now",
+  "liveAssignedMinutesAgo": "Assigned {minutes} min ago",
+  "@liveAssignedMinutesAgo": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "liveAssignedHoursAgo": "Assigned {hours} hr ago",
+  "@liveAssignedHoursAgo": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+
+  "historyTitle": "History",
+  "historyEmpty": "No deliveries yet",
+  "historyError": "Could not load history — pull to retry",
+
+  "orderDetailsTitle": "Order Details",
+  "orderDetailsLoadError": "Could not load order details",
+  "orderDetailsPickup": "Pickup",
+  "orderDetailsDeliveryTo": "Delivery to",
+  "orderDetailsDriver": "Driver",
+  "orderDetailsItems": "Items",
+  "orderDetailsNoItems": "No item details available",
+  "orderDetailsNote": "Note",
+  "orderDetailsDeliveryFee": "Delivery fee",
+  "orderDetailsTotalToCollect": "Total to collect",
+  "orderDetailsCall": "Call",
+  "orderDetailsNavigate": "Navigate",
+  "orderDetailsDelivered": "Delivered",
+  "orderDetailsDeliveredAt": "Delivered {time}",
+  "@orderDetailsDeliveredAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "orderDetailsCustomer": "Customer",
+  "orderDetailsNoLocation": "No location available for this order",
+  "orderDetailsMapsFailed": "Could not open Maps",
+  "orderDetailsDialerFailed": "Could not open the dialer",
+
+  "settingsTitle": "Settings",
+  "settingsProfile": "Profile",
+  "settingsLanguage": "Language",
+  "settingsHelp": "Help",
+  "settingsAbout": "About app",
+  "settingsLogout": "Log out",
+  "settingsLogoutConfirmTitle": "Log out?",
+  "settingsLogoutConfirmBody": "You'll need to log in again to see your orders.",
+  "settingsCancel": "Cancel",
+
+  "profileTitle": "Profile",
+  "profileNone": "No profile data available",
+  "profileName": "Name",
+  "profilePhone": "Phone",
+  "profileStatus": "Account status",
+  "profileActive": "Active",
+  "profileInactive": "Inactive",
+
+  "languageTitle": "Language",
+  "languageEnglish": "English",
+  "languageArabic": "العربية",
+
+  "helpTitle": "Help",
+  "helpGettingOrderTitle": "Getting an order",
+  "helpGettingOrderBody": "Orders are assigned to you by the dispatch team. You'll see them appear on the Live tab.",
+  "helpMarkDeliveredTitle": "Marking an order delivered",
+  "helpMarkDeliveredBody": "Open the order from the Live tab and tap Mark delivered once you have handed it to the customer.",
+  "helpMoreTitle": "Need more help?",
+  "helpMoreBody": "Contact your dispatcher directly for now.",
+
+  "aboutTitle": "About app",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "aboutPrivacyTitle": "Privacy policy",
+  "aboutPrivacyBody": "Placeholder privacy policy text — replace with the real policy before release.",
+  "aboutTermsTitle": "Terms of service",
+  "aboutTermsBody": "Placeholder terms text — replace with the real terms before release."
+}

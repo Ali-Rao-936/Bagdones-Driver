@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zaytoon_rider/core/network/connectivity_service.dart';
 import 'package:zaytoon_rider/features/auth/presentation/providers/auth_provider.dart';
+import 'package:zaytoon_rider/l10n/app_localizations.dart';
 import 'package:zaytoon_rider/features/splash/presentation/screens/splash_screen.dart';
 
 /// The offline branch of `_bootstrap` returns before `readToken()`, so
@@ -19,7 +20,10 @@ void main() {
         overrides: [
           connectivityServiceProvider.overrideWithValue(_OfflineConnectivity()),
         ],
-        child: const MaterialApp(home: SplashScreen()),
+        child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: SplashScreen()),
       ),
     );
 

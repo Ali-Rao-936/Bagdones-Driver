@@ -11,6 +11,7 @@ class SecureStorageService {
   final FlutterSecureStorage _storage;
 
   static const _tokenKey = 'driver_auth_token';
+  static const _localeKey = 'driver_locale';
 
   Future<String?> readToken() => _storage.read(key: _tokenKey);
 
@@ -18,4 +19,13 @@ class SecureStorageService {
       _storage.write(key: _tokenKey, value: token);
 
   Future<void> clearToken() => _storage.delete(key: _tokenKey);
+
+  /// The driver's chosen language code. Not a secret, but it rides
+  /// along here rather than pulling in a second storage plugin for a
+  /// single string. Losing it (e.g. the Android keystore reset we've
+  /// seen) just falls back to English.
+  Future<String?> readLocale() => _storage.read(key: _localeKey);
+
+  Future<void> saveLocale(String languageCode) =>
+      _storage.write(key: _localeKey, value: languageCode);
 }

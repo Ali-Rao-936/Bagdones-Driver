@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('About app')),
+      appBar: AppBar(title: Text(l10n.aboutTitle)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: FutureBuilder<PackageInfo>(
@@ -21,17 +25,23 @@ class AboutScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Zaytoon Driver', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                  Text(
+                    l10n.appTitle,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Version $version', style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    l10n.aboutVersion(version),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                   const SizedBox(height: 24),
-                  Text('Privacy policy', style: Theme.of(context).textTheme.titleSmall),
+                  Text(l10n.aboutPrivacyTitle, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 8),
-                  const Text('Placeholder privacy policy text — replace with the real policy before release.'),
+                  Text(l10n.aboutPrivacyBody),
                   const SizedBox(height: 20),
-                  Text('Terms of service', style: Theme.of(context).textTheme.titleSmall),
+                  Text(l10n.aboutTermsTitle, style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 8),
-                  const Text('Placeholder terms text — replace with the real terms before release.'),
+                  Text(l10n.aboutTermsBody),
                 ],
               ),
             );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Read-only for now — there's no driver-facing "update my info"
 /// endpoint in the current backend; name/phone/password are all set
@@ -11,12 +12,13 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final driver = ref.watch(authProvider).driver;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: driver == null
-          ? const Center(child: Text('No profile data available'))
+          ? Center(child: Text(l10n.profileNone))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -26,20 +28,22 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.badge_outlined),
-                        title: const Text('Name'),
+                        title: Text(l10n.profileName),
                         subtitle: Text(driver.name),
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.phone_outlined),
-                        title: const Text('Phone'),
+                        title: Text(l10n.profilePhone),
                         subtitle: Text(driver.phoneNumber),
                       ),
                       const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.verified_outlined),
-                        title: const Text('Account status'),
-                        subtitle: Text(driver.isActive ? 'Active' : 'Inactive'),
+                        title: Text(l10n.profileStatus),
+                        subtitle: Text(
+                          driver.isActive ? l10n.profileActive : l10n.profileInactive,
+                        ),
                       ),
                     ],
                   ),

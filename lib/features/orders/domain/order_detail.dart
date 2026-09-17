@@ -43,8 +43,7 @@ class OrderDetail {
       // No customer name in the payload — the full address is the
       // useful thing to show under "Delivery to".
       clientName: (clientAddress?['full_address'] ??
-              clientAddress?['area']) as String? ??
-          'Customer',
+              clientAddress?['area']) as String?,
       clientPhone: json['client_phone'] as String?,
       clientMapsUrl: (clientAddress?['google_maps_link'] ??
           clientAddress?['google_maps_url']) as String?,
@@ -66,7 +65,7 @@ class OrderDetail {
   final String storeName;
   final String? storePhone;
   final String? storeMapsUrl;
-  final String clientName;
+  final String? clientName;
   final String? clientPhone;
   final String? clientMapsUrl;
   final List<OrderItem> items;

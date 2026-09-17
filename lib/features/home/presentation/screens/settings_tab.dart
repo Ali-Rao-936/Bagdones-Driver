@@ -6,6 +6,7 @@ import '../../../settings/presentation/screens/about_screen.dart';
 import '../../../settings/presentation/screens/help_screen.dart';
 import '../../../settings/presentation/screens/language_screen.dart';
 import '../../../settings/presentation/screens/profile_screen.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Grouped-card layout: the four navigable rows sit in one card;
 /// Logout gets its own card below since it's a destructive action,
@@ -15,8 +16,9 @@ class SettingsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -26,7 +28,7 @@ class SettingsTab extends ConsumerWidget {
               children: [
                 _SettingsRow(
                   icon: Icons.person_outline,
-                  label: 'Profile',
+                  label: l10n.settingsProfile,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   ),
@@ -34,7 +36,7 @@ class SettingsTab extends ConsumerWidget {
                 const Divider(height: 1),
                 _SettingsRow(
                   icon: Icons.language_outlined,
-                  label: 'Language',
+                  label: l10n.settingsLanguage,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const LanguageScreen()),
                   ),
@@ -42,7 +44,7 @@ class SettingsTab extends ConsumerWidget {
                 const Divider(height: 1),
                 _SettingsRow(
                   icon: Icons.help_outline,
-                  label: 'Help',
+                  label: l10n.settingsHelp,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const HelpScreen()),
                   ),
@@ -50,7 +52,7 @@ class SettingsTab extends ConsumerWidget {
                 const Divider(height: 1),
                 _SettingsRow(
                   icon: Icons.info_outline,
-                  label: 'About app',
+                  label: l10n.settingsAbout,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const AboutScreen()),
                   ),
@@ -72,7 +74,7 @@ class SettingsTab extends ConsumerWidget {
                     Icon(Icons.logout, color: Theme.of(context).colorScheme.error, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Log out',
+                      l10n.settingsLogout,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                         fontWeight: FontWeight.w600,
@@ -91,21 +93,24 @@ class SettingsTab extends ConsumerWidget {
   Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Log out?'),
-        content: const Text("You'll need to log in again to see your orders."),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+        title: Text(l10n.settingsLogoutConfirmTitle),
+        content: Text(l10n.settingsLogoutConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.settingsCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-            child: const Text('Log out'),
+            child: Text(l10n.settingsLogout),
           ),
         ],
-      ),
+      );
+      },
     );
 
     // No manual navigation here — logout() sets authProvider's state

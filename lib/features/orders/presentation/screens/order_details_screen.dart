@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/network/api_exception.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/order_detail.dart';
 import '../providers/live_orders_provider.dart';
@@ -39,7 +40,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
       if (!mounted) return;
       setState(() => _isMarkingDelivered = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not mark as delivered')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.liveMarkDeliveredFailed)),
       );
     }
   }
@@ -49,7 +50,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
     final launched = await launchUrl(Uri(scheme: 'tel', path: phone));
     if (!launched && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the dialer')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.orderDetailsDialerFailed)),
       );
     }
   }
@@ -57,32 +58,33 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
   Future<void> _openMaps(String? url) async {
     if (url == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No location available for this order')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.orderDetailsNoLocation)),
       );
       return;
     }
     final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     if (!launched && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open Maps')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.orderDetailsMapsFailed)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final detailAsync = ref.watch(orderDetailProvider(widget.orderId));
     final driverName = ref.watch(authProvider).driver?.name;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Order Details')),
+      appBar: AppBar(title: Text(l10n.orderDetailsTitle)),
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Text(
-              error is ApiException ? error.message : 'Could not load order details',
+              error is ApiException ? error.message : l10n.orderDetailsLoadError,
               textAlign: TextAlign.center,
             ),
           ),
@@ -93,6 +95,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
   }
 
   Widget _buildBody(BuildContext context, OrderDetail detail, String? driverName) {
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor(context, detail.status);
     // Once delivered, pickup/dropoff are history rather than things to
     // act on, so the cards drop their live coral/teal accents.
@@ -146,8 +149,11 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                 Expanded(
                   child: Text(
                     detail.deliveredAt == null
-                        ? 'Delivered'
-                        : 'Delivered ${DateFormat('MMM d, h:mm a').format(detail.deliveredAt!.toLocal())}',
+                        ? l10n.orderDetailsDelivered
+                        : l10n.orderDetailsDeliveredAt(
+                            DateFormat('MMM d, h:mm a', l10n.localeName)
+                                .format(detail.deliveredAt!.toLocal()),
+                          ),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: _deliveredColor,
@@ -160,7 +166,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
         ],
         const SizedBox(height: 16),
         _SectionCard(
-          title: 'Pickup',
+          title: l10n.orderDetailsPickup,
           icon: Icons.storefront_outlined,
           name: detail.storeName,
           phone: detail.storePhone,
@@ -171,9 +177,9 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          title: 'Delivery to',
+          title: l10n.orderDetailsDeliveryTo,
           icon: Icons.location_on_outlined,
-          name: detail.clientName,
+          name: detail.clientName ?? l10n.orderDetailsCustomer,
           phone: detail.clientPhone,
           accentColor: dropoffAccent,
           onCall: () => _call(detail.clientPhone),
@@ -185,13 +191,13 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
             margin: EdgeInsets.zero,
             child: ListTile(
               leading: const Icon(Icons.badge_outlined),
-              title: const Text('Driver'),
+              title: Text(l10n.orderDetailsDriver),
               subtitle: Text(driverName),
             ),
           ),
         ],
         const SizedBox(height: 16),
-        Text('Items', style: Theme.of(context).textTheme.titleSmall),
+        Text(l10n.orderDetailsItems, style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 8),
         Card(
           margin: EdgeInsets.zero,
@@ -202,16 +208,16 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                 _ItemRow(item: detail.items[i]),
               ],
               if (detail.items.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('No item details available'),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.orderDetailsNoItems),
                 ),
             ],
           ),
         ),
         if (detail.note != null && detail.note!.isNotEmpty) ...[
           const SizedBox(height: 16),
-          Text('Note', style: Theme.of(context).textTheme.titleSmall),
+          Text(l10n.orderDetailsNote, style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Card(
             margin: EdgeInsets.zero,
@@ -232,7 +238,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Delivery fee',
+                      l10n.orderDetailsDeliveryFee,
                       style: TextStyle(color: Theme.of(context).colorScheme.outline),
                     ),
                     Text(detail.deliveryFee.toStringAsFixed(2)),
@@ -244,9 +250,9 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Total to collect',
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    Text(
+                      l10n.orderDetailsTotalToCollect,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                     ),
                     Text(
                       detail.total.toStringAsFixed(2),
@@ -277,7 +283,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(Icons.check),
-              label: const Text('Mark delivered'),
+              label: Text(l10n.liveMarkDelivered),
             ),
           ),
         ],
@@ -331,6 +337,7 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
@@ -378,14 +385,14 @@ class _SectionCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onCall,
                     icon: const Icon(Icons.call_outlined, size: 16),
-                    label: const Text('Call'),
+                    label: Text(l10n.orderDetailsCall),
                   ),
                 if (phone != null && onNavigate != null) const SizedBox(width: 8),
                 if (onNavigate != null)
                   OutlinedButton.icon(
                     onPressed: onNavigate,
                     icon: const Icon(Icons.navigation_outlined, size: 16),
-                    label: const Text('Navigate'),
+                    label: Text(l10n.orderDetailsNavigate),
                   ),
               ],
             ),

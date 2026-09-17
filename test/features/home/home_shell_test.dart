@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zaytoon_rider/features/home/presentation/screens/history_tab.dart';
+import 'package:zaytoon_rider/l10n/app_localizations.dart';
 import 'package:zaytoon_rider/features/home/presentation/screens/home_shell.dart';
 import 'package:zaytoon_rider/features/home/presentation/screens/live_tab.dart';
 import 'package:zaytoon_rider/features/orders/presentation/providers/history_provider.dart';
@@ -27,7 +28,10 @@ void main() {
             liveOrdersProvider.overrideWith(_FakeLiveOrders.new),
             historyProvider.overrideWith(_FakeHistory.new),
           ],
-          child: const MaterialApp(home: HomeShell()),
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: HomeShell()),
         ),
       );
 

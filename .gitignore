@@ -50,3 +50,4 @@ app.*.map.json
 # Claude Code — local, machine-specific settings (shared config goes in
 # .claude/settings.json, which is committed)
 .claude/settings.local.json
+l10n_untranslated.txt

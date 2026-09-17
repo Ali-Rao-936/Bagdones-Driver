@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 /// Bare-bones on purpose — this is Phase 1's real design work.
@@ -28,19 +29,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  String? _validatePhone(String? value) {
+  String? _validatePhone(AppLocalizations l10n, String? value) {
     final phone = value?.trim() ?? '';
-    if (phone.isEmpty) return 'Phone number is required';
+    if (phone.isEmpty) return l10n.loginPhoneRequired;
     if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(phone)) {
-      return 'Enter a valid phone number';
+      return l10n.loginPhoneInvalid;
     }
     return null;
   }
 
-  String? _validatePassword(String? value) {
+  String? _validatePassword(AppLocalizations l10n, String? value) {
     final password = value ?? '';
-    if (password.isEmpty) return 'Password is required';
-    if (password.length < 6) return 'Password must be at least 6 characters';
+    if (password.isEmpty) return l10n.loginPasswordRequired;
+    if (password.length < 6) return l10n.loginPasswordTooShort;
     return null;
   }
 
@@ -62,7 +63,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // instead of always blaming the phone/password.
       final message = ref.read(authProvider).errorMessage;
       setState(
-        () => _error = message ?? 'Login failed — check your phone and password',
+        () => _error =
+            message ?? AppLocalizations.of(context)!.loginFailed,
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -71,6 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -92,25 +95,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 160),
                 ),
                 const SizedBox(height: 8),
-                Text('Zaytoon Driver',
+                Text(l10n.appTitle,
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                      hintText: '+9627xxxxxxxx',
-                      labelText: 'Phone number',
-                      border: OutlineInputBorder()),
-                  validator: _validatePhone,
+                  decoration: InputDecoration(
+                      hintText: l10n.loginPhoneHint,
+                      labelText: l10n.loginPhoneLabel,
+                      border: const OutlineInputBorder()),
+                  validator: (value) => _validatePhone(l10n, value),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  validator: _validatePassword,
+                  validator: (value) => _validatePassword(l10n, value),
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: l10n.loginPasswordLabel,
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(_obscurePassword
@@ -136,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Log in'),
+                      : Text(l10n.loginButton),
                 ),
               ],
             ),

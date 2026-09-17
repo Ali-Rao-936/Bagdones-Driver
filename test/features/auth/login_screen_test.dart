@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:zaytoon_rider/l10n/app_localizations.dart';
 import 'package:zaytoon_rider/features/auth/presentation/screens/login_screen.dart';
 
 void main() {
   Future<void> pumpLoginScreen(WidgetTester tester) => tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(home: LoginScreen()),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: LoginScreen(),
+          ),
         ),
       );
 

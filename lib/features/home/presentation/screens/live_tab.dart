@@ -8,16 +8,18 @@ import '../../../orders/domain/order.dart';
 import '../../../orders/presentation/providers/live_orders_provider.dart';
 import '../../../orders/presentation/screens/order_details_screen.dart';
 import '../../../orders/presentation/widgets/store_icon.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class LiveTab extends ConsumerWidget {
   const LiveTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(liveOrdersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Live orders')),
+      appBar: AppBar(title: Text(l10n.liveTitle)),
       body: RefreshIndicator(
         onRefresh: () => ref.read(liveOrdersProvider.notifier).refresh(),
         child: _buildBody(context, ref, state),
@@ -27,15 +29,15 @@ class LiveTab extends ConsumerWidget {
 
   Widget _buildBody(
       BuildContext context, WidgetRef ref, LiveOrdersState state) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     if (state.error != null && state.orders.isEmpty) {
-      return const _ScrollableMessage(
-          text: 'Could not load live orders — pull to retry');
+      return _ScrollableMessage(text: l10n.liveError);
     }
     if (state.orders.isEmpty) {
-      return const _ScrollableMessage(text: 'No live orders right now');
+      return _ScrollableMessage(text: l10n.liveEmpty);
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -83,12 +85,12 @@ class _ScrollableMessage extends StatelessWidget {
   }
 }
 
-String _relativeTime(DateTime? time) {
+String _relativeTime(AppLocalizations l10n, DateTime? time) {
   if (time == null) return '';
   final diff = DateTime.now().difference(time.toLocal());
-  if (diff.inMinutes < 1) return 'Assigned just now';
-  if (diff.inMinutes < 60) return 'Assigned ${diff.inMinutes} min ago';
-  return 'Assigned ${diff.inHours} hr ago';
+  if (diff.inMinutes < 1) return l10n.liveAssignedJustNow;
+  if (diff.inMinutes < 60) return l10n.liveAssignedMinutesAgo(diff.inMinutes);
+  return l10n.liveAssignedHoursAgo(diff.inHours);
 }
 
 Color _statusColor(BuildContext context, String status) {
@@ -140,7 +142,7 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
       if (!mounted) return;
       setState(() => _isMarkingDelivered = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not mark as delivered')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.liveMarkDeliveredFailed)),
       );
     }
   }
@@ -148,7 +150,7 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
   Future<void> _openMaps(String? url) async {
     if (url == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No location available for this order')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.orderDetailsNoLocation)),
       );
       return;
     }
@@ -161,13 +163,14 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
         await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     if (!launched && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open Maps')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.orderDetailsMapsFailed)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final order = widget.order;
     final color = _statusColor(context, order.status);
 
@@ -181,7 +184,7 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
             backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
             icon: Icons.visibility_outlined,
-            label: 'View',
+            label: l10n.liveView,
             borderRadius: BorderRadius.circular(12),
           ),
         ],
@@ -214,7 +217,7 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
                                   _PulsingDot(color: color),
                                   const SizedBox(width: 6),
                                   Text(
-                                    'New',
+                                    l10n.liveNewBadge,
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -265,7 +268,7 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _relativeTime(order.updatedAt),
+                              _relativeTime(l10n, order.updatedAt),
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Theme.of(context).colorScheme.outline,
@@ -300,7 +303,7 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
                                       ),
                                     )
                                   : const Icon(Icons.check, size: 18),
-                              label: const Text('Mark delivered'),
+                              label: Text(l10n.liveMarkDelivered),
                             ),
                           ),
                         ],

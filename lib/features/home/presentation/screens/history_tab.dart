@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../orders/domain/order.dart';
 import '../../../orders/presentation/providers/history_provider.dart';
 import '../../../orders/presentation/screens/order_details_screen.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class HistoryTab extends ConsumerStatefulWidget {
   const HistoryTab({super.key});
@@ -38,10 +39,11 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(historyProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('History')),
+      appBar: AppBar(title: Text(l10n.historyTitle)),
       body: RefreshIndicator(
         onRefresh: () => ref.read(historyProvider.notifier).refresh(),
         child: _buildBody(state),
@@ -50,14 +52,15 @@ class _HistoryTabState extends ConsumerState<HistoryTab> {
   }
 
   Widget _buildBody(HistoryState state) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     if (state.error != null && state.orders.isEmpty) {
-      return const _ScrollableMessage(text: 'Could not load history — pull to retry');
+      return _ScrollableMessage(text: l10n.historyError);
     }
     if (state.orders.isEmpty) {
-      return const _ScrollableMessage(text: 'No deliveries yet');
+      return _ScrollableMessage(text: l10n.historyEmpty);
     }
     return ListView.builder(
       controller: _scrollController,
@@ -132,9 +135,11 @@ class _HistoryOrderCard extends StatelessWidget {
                     backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: const Icon(Icons.storefront_outlined, size: 16),
                   ),
-                  Positioned(
+                  // Directional so the delivered tick sits on the
+                  // trailing side of the avatar in Arabic too.
+                  PositionedDirectional(
                     bottom: -2,
-                    right: -2,
+                    end: -2,
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(

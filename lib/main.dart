@@ -8,6 +8,7 @@ import 'core/locale/locale_provider.dart';
 import 'core/notifications/push_service.dart';
 import 'core/router/app_router.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,11 +43,12 @@ class _ZaytoonRiderAppState extends ConsumerState<ZaytoonRiderApp> {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
-      title: 'Zaytoon Driver',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       debugShowCheckedModeBanner: false,
       locale: locale,
-      supportedLocales: const [Locale('en'), Locale('ar')],
+      supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

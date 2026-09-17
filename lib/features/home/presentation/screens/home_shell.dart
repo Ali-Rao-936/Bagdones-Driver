@@ -4,6 +4,8 @@ import 'history_tab.dart';
 import 'live_tab.dart';
 import 'settings_tab.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 /// The 3-tab structure: Live, History, Settings. Each tab is its own
 /// file so they stay easy to build out independently — the Live tab
 /// is where it's worth spending the most design time.
@@ -33,6 +35,7 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: IndexedStack(
         index: _index,
@@ -47,10 +50,19 @@ class _HomeShellState extends State<HomeShell> {
           _index = i;
           _visited.add(i);
         }),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.local_shipping_outlined), label: 'Live'),
-          NavigationDestination(icon: Icon(Icons.history), label: 'History'),
-          NavigationDestination(icon: Icon(Icons.settings_outlined), label: 'Settings'),
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.local_shipping_outlined),
+            label: l10n.tabLive,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.history),
+            label: l10n.tabHistory,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.settings_outlined),
+            label: l10n.tabSettings,
+          ),
         ],
       ),
     );
