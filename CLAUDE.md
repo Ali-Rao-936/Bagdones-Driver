@@ -23,6 +23,7 @@ as two separate app registrations in project `bagdones-e-c-bv`. Don't "fix" the 
 
 ```bash
 flutter pub get                                  # after any pubspec change
+flutter gen-l10n                                 # after editing lib/l10n/*.arb
 flutter analyze                                  # lint + type check; keep at "No issues found!"
 flutter test                                     # full suite
 flutter test test/features/auth/login_screen_test.dart          # single file
@@ -177,9 +178,13 @@ order had when first opened — a delivered order still reading "Accepted", offe
 Delivered button the backend would reject. Order status moves underneath the app, so each
 visit must refetch.
 
-Mark Delivered is the driver's only legal transition, and the button renders only for
-`In_Delivery`. On success the order is removed from Live immediately and `historyProvider`
-is invalidated, so it is already in History when the driver switches tabs.
+The driver can make two status changes, each shown as a button only when the backend
+would accept it (nothing for `Accepted`): **Start Delivery** (`PATCH …/{id}/in-delivery`)
+for `Processing`, and **Mark Delivered** (`PATCH …/{id}/deliver`) for `In_Delivery`.
+Both go through `liveOrdersProvider` so Live stays in step. Start Delivery refetches Live,
+and Order Details stays open and refetches its detail. Mark Delivered removes the order
+from Live immediately and invalidates `historyProvider`, so the order is already in
+History when the driver switches tabs.
 
 Amounts shown to the driver are the order **total**, not `delivery_fee` — the total is what
 they collect at the door; the fee is only their own cut.
@@ -227,12 +232,21 @@ Reuse this pattern for new forms.
 
 ## Conventions
 
-- Locale is `en`/`ar` only (`localeProvider`), in-memory for now; persisting it is Settings-tab work.
+- Locale is `en`/`ar` only (`localeProvider`). The choice is persisted through
+  `SecureStorageService` (key `driver_locale`) and restored asynchronously, so the first frame or
+  two render in English. A storage failure falls back to English rather than blocking startup.
+- **All user-facing strings go through `AppLocalizations`** (gen-l10n, `generate: true`). Add
+  new keys to `lib/l10n/app_en.arb` (the template) *and* `app_ar.arb`, then run
+  `flutter gen-l10n` (`flutter pub get`/`run` also regenerate). The generated
+  `lib/l10n/app_localizations*.dart` files are committed, so don't edit them by hand. Keys
+  missing from Arabic are listed in the git-ignored `l10n_untranslated.txt`.
 - Tokens go through `SecureStorageService`, never `FlutterSecureStorage` directly.
 - Environment values live in `core/env/env_config.dart`. Only production exists; when staging
   arrives, switch on `--dart-define=ENV=staging` rather than hardcoding.
 - Widget tests should pump the screen directly, not `ZaytoonRiderApp` — the full app instantiates
   `AuthNotifier` → `SecureStorageService`, which hits a platform channel that doesn't exist in tests.
+  The wrapping `MaterialApp` must pass `AppLocalizations.localizationsDelegates` and
+  `supportedLocales`. Without them `AppLocalizations.of(context)!` throws.
 - Settings sub-screens use plain `Navigator.push`, not go_router routes. They sit on top of a tab
   inside `HomeShell` and play no part in the auth redirect logic. Pageless routes are torn down
   with the page beneath them, so a 401 while on Profile still lands correctly on Login.

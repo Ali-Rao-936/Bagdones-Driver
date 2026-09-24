@@ -21,28 +21,64 @@ class OrderDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
-  bool _isMarkingDelivered = false;
+  bool _isUpdating = false;
+
+  Future<void> _startDelivery() async {
+    final l10n = AppLocalizations.of(context)!;
+    final ok = await _transition(
+      (n) => n.startDelivery(widget.orderId),
+      l10n.liveStartDeliveryFailed,
+    );
+    if (!ok) return;
+    // Stay on the screen: refetching flips the status to In_Delivery,
+    // which swaps this button for Mark Delivered. Await it so the old
+    // button doesn't re-enable against the stale Processing detail.
+    ref.invalidate(orderDetailProvider(widget.orderId));
+    try {
+      await ref.read(orderDetailProvider(widget.orderId).future);
+    } catch (_) {
+      // The provider's own error state renders this.
+    }
+    if (mounted) setState(() => _isUpdating = false);
+  }
 
   Future<void> _markDelivered() async {
-    setState(() => _isMarkingDelivered = true);
+    final l10n = AppLocalizations.of(context)!;
+    final ok = await _transition(
+      (n) => n.markDelivered(widget.orderId),
+      l10n.liveMarkDeliveredFailed,
+    );
+    if (!ok) return;
+    // The cached detail still says In_Delivery; drop it so a later
+    // visit refetches instead of showing a stale status and a
+    // button the backend would now reject.
+    ref.invalidate(orderDetailProvider(widget.orderId));
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  /// Runs a status transition through [liveOrdersProvider] so Live
+  /// stays in step. Returns whether it succeeded; on failure it has
+  /// already shown the backend's message (or [failedMessage]).
+  Future<bool> _transition(
+    Future<void> Function(LiveOrdersNotifier notifier) call,
+    String failedMessage,
+  ) async {
+    setState(() => _isUpdating = true);
     try {
-      await ref.read(liveOrdersProvider.notifier).markDelivered(widget.orderId);
-      // The cached detail still says In_Delivery; drop it so a later
-      // visit refetches instead of showing a stale status and a
-      // button the backend would now reject.
-      ref.invalidate(orderDetailProvider(widget.orderId));
-      if (mounted) Navigator.of(context).pop();
+      await call(ref.read(liveOrdersProvider.notifier));
+      return true;
     } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() => _isMarkingDelivered = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      if (mounted) {
+        setState(() => _isUpdating = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _isMarkingDelivered = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.liveMarkDeliveredFailed)),
-      );
+      if (mounted) {
+        setState(() => _isUpdating = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failedMessage)));
+      }
     }
+    return false;
   }
 
   Future<void> _call(String? phone) async {
@@ -264,29 +300,24 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
             ),
           ),
         ),
-        // Same rule as Live: only the driver's one allowed
-        // transition, only shown when it's actually legal to call.
-        if (detail.status == 'In_Delivery') ...[
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _isMarkingDelivered ? null : _markDelivered,
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              icon: _isMarkingDelivered
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.check),
-              label: Text(l10n.liveMarkDelivered),
-            ),
+        // Same rule as Live: only the driver's two legal transitions,
+        // each shown only when the backend would accept it.
+        if (detail.status == 'Processing')
+          _TransitionButton(
+            label: l10n.liveStartDelivery,
+            icon: Icons.delivery_dining,
+            color: Colors.indigo.shade400,
+            isBusy: _isUpdating,
+            onPressed: _startDelivery,
+          )
+        else if (detail.status == 'In_Delivery')
+          _TransitionButton(
+            label: l10n.liveMarkDelivered,
+            icon: Icons.check,
+            color: Colors.green.shade600,
+            isBusy: _isUpdating,
+            onPressed: _markDelivered,
           ),
-        ],
         // Keeps the total (and the button, when shown) off the bottom
         // edge instead of butting against it.
         const SizedBox(height: 32),
@@ -296,6 +327,47 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
 }
 
 const _deliveredColor = Color(0xFF2E7D32);
+
+class _TransitionButton extends StatelessWidget {
+  const _TransitionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.isBusy,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool isBusy;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed: isBusy ? null : onPressed,
+          style: FilledButton.styleFrom(
+            backgroundColor: color,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          icon: isBusy
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : Icon(icon),
+          label: Text(label),
+        ),
+      ),
+    );
+  }
+}
 
 Color _statusColor(BuildContext context, String status) {
   switch (status) {

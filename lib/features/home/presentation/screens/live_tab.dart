@@ -123,27 +123,32 @@ class _LiveOrderCard extends ConsumerStatefulWidget {
 }
 
 class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
-  bool _isMarkingDelivered = false;
+  bool _isUpdating = false;
 
-  Future<void> _markDelivered() async {
-    setState(() => _isMarkingDelivered = true);
+  /// Runs one of the driver's status transitions, showing the
+  /// backend's own message on an ApiException and [failedMessage]
+  /// for anything else.
+  Future<void> _transition(
+    Future<void> Function(LiveOrdersNotifier notifier) call,
+    String failedMessage,
+  ) async {
+    setState(() => _isUpdating = true);
     try {
-      await ref
-          .read(liveOrdersProvider.notifier)
-          .markDelivered(widget.order.id);
-      // No need to reset the flag on success — this card is about to
-      // disappear entirely once the order leaves state.orders.
+      await call(ref.read(liveOrdersProvider.notifier));
+      // Mark Delivered removes this card entirely; Start Delivery
+      // rebuilds it with the new status, so clear the flag if we're
+      // still here.
+      if (mounted) setState(() => _isUpdating = false);
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _isMarkingDelivered = false);
+      setState(() => _isUpdating = false);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
-      setState(() => _isMarkingDelivered = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.liveMarkDeliveredFailed)),
-      );
+      setState(() => _isUpdating = false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(failedMessage)));
     }
   }
 
@@ -281,32 +286,31 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
                             ),
                           ],
                         ),
-                        // Only the driver's one allowed transition —
-                        // hidden entirely for Accepted/Processing since
-                        // the backend would reject the call anyway.
-                        if (order.status == 'In_Delivery') ...[
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              onPressed:
-                                  _isMarkingDelivered ? null : _markDelivered,
-                              style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.green.shade600),
-                              icon: _isMarkingDelivered
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.check, size: 18),
-                              label: Text(l10n.liveMarkDelivered),
+                        // Only the driver's two legal transitions, each
+                        // shown only when the backend would accept it —
+                        // nothing at all for Accepted.
+                        if (order.status == 'Processing')
+                          _TransitionButton(
+                            label: l10n.liveStartDelivery,
+                            icon: Icons.delivery_dining,
+                            color: Colors.indigo.shade400,
+                            isBusy: _isUpdating,
+                            onPressed: () => _transition(
+                              (n) => n.startDelivery(order.id),
+                              l10n.liveStartDeliveryFailed,
+                            ),
+                          )
+                        else if (order.status == 'In_Delivery')
+                          _TransitionButton(
+                            label: l10n.liveMarkDelivered,
+                            icon: Icons.check,
+                            color: Colors.green.shade600,
+                            isBusy: _isUpdating,
+                            onPressed: () => _transition(
+                              (n) => n.markDelivered(order.id),
+                              l10n.liveMarkDeliveredFailed,
                             ),
                           ),
-                        ],
                       ],
                     ),
                   ),
@@ -314,6 +318,47 @@ class _LiveOrderCardState extends ConsumerState<_LiveOrderCard> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TransitionButton extends StatelessWidget {
+  const _TransitionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.isBusy,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool isBusy;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed: isBusy ? null : onPressed,
+          style: FilledButton.styleFrom(backgroundColor: color),
+          icon: isBusy
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : Icon(icon, size: 18),
+          label: Text(label),
         ),
       ),
     );

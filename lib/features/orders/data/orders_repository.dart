@@ -48,11 +48,20 @@ class OrdersRepository {
     );
   }
 
-  /// PATCH /delivery/orders/{id}/deliver — the only status transition
-  /// the driver app can make. Backend enforces: 403 if inactive/not
-  /// your order, 400 if already Delivered, 422 if status isn't
-  /// In_Delivery yet — all three already surface as typed
-  /// ApiExceptions with the backend's own message via ApiClient.
+  /// PATCH /delivery/orders/{id}/in-delivery — Processing →
+  /// In_Delivery, i.e. the driver has picked the order up. Rejections
+  /// surface as typed ApiExceptions with the backend's own message,
+  /// same as [markDelivered]. The response body is ignored; callers
+  /// refetch to see the new status.
+  Future<void> startDelivery(int orderId) async {
+    await _client.patch('/delivery/orders/$orderId/in-delivery');
+  }
+
+  /// PATCH /delivery/orders/{id}/deliver — In_Delivery → Delivered.
+  /// Backend enforces: 403 if inactive/not your order, 400 if already
+  /// Delivered, 422 if status isn't In_Delivery yet — all three
+  /// already surface as typed ApiExceptions with the backend's own
+  /// message via ApiClient.
   Future<void> markDelivered(int orderId) async {
     await _client.patch('/delivery/orders/$orderId/deliver');
   }

@@ -47,4 +47,29 @@ void main() {
     expect(find.text('Enter a valid phone number'), findsOneWidget);
     expect(find.text('Password must be at least 6 characters'), findsOneWidget);
   });
+
+  testWidgets('does not overflow when the soft keyboard is up', (tester) async {
+    // A short viewport with large bottom insets — i.e. a phone with
+    // the keyboard open. Without a scroll view the Column overflows
+    // and Flutter paints the yellow-and-black stripes.
+    tester.view.physicalSize = const Size(400, 600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: MediaQuery(
+            data: MediaQueryData(viewInsets: EdgeInsets.only(bottom: 340)),
+            child: LoginScreen(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }

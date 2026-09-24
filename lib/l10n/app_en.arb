@@ -26,6 +26,8 @@
   "liveError": "Could not load live orders — pull to retry",
   "liveNewBadge": "New",
   "liveView": "View",
+  "liveStartDelivery": "Start delivery",
+  "liveStartDeliveryFailed": "Could not start delivery",
   "liveMarkDelivered": "Mark delivered",
   "liveMarkDeliveredFailed": "Could not mark as delivered",
   "liveAssignedJustNow": "Assigned just now",

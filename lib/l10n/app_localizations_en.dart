@@ -73,6 +73,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveView => 'View';
 
   @override
+  String get liveStartDelivery => 'Start delivery';
+
+  @override
+  String get liveStartDeliveryFailed => 'Could not start delivery';
+
+  @override
   String get liveMarkDelivered => 'Mark delivered';
 
   @override

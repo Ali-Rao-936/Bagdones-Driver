@@ -119,12 +119,13 @@ class PushService {
     }
 
     FirebaseMessaging.onMessage.listen((message) {
-      debugPrint('FCM foreground message: ${message.messageId} ${message.data}');
+      debugPrint(
+          'FCM foreground message: ${message.messageId} ${message.data}');
       if (!_foregroundMessages.isClosed) _foregroundMessages.add(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      // TODO: deep-link to Order Details once that screen exists.
+      //deep-link to Order Details once that screen exists.
       debugPrint('FCM notification tapped: ${message.data}');
     });
   }

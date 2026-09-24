@@ -26,6 +26,8 @@
   "liveError": "تعذّر تحميل الطلبات — اسحب للتحديث",
   "liveNewBadge": "جديد",
   "liveView": "عرض",
+  "liveStartDelivery": "بدء التوصيل",
+  "liveStartDeliveryFailed": "تعذّر بدء التوصيل",
   "liveMarkDelivered": "تم التسليم",
   "liveMarkDeliveredFailed": "تعذّر تحديد الطلب كمُسلَّم",
   "liveAssignedJustNow": "تم الإسناد للتو",

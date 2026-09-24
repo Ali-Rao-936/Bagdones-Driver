@@ -9,7 +9,8 @@ import '../../domain/order_detail.dart';
 /// In_Delivery → Delivered) while the app is open. Caching meant
 /// reopening an order showed whatever status it had the first time it
 /// was viewed — e.g. a delivered order still reading "Accepted", with
-/// a Mark Delivered button the backend would now reject. autoDispose
+/// a Mark Delivered button the backend would now reject (or a Start
+/// Delivery button for an order already on the road). autoDispose
 /// drops the value once the screen closes, so each visit refetches.
 final orderDetailProvider =
     FutureProvider.autoDispose.family<OrderDetail, int>((ref, orderId) {

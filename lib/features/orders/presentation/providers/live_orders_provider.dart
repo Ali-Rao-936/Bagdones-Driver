@@ -99,6 +99,15 @@ class LiveOrdersNotifier extends Notifier<LiveOrdersState> {
     state = state.copyWith(newOrderIds: updated);
   }
 
+  /// Processing → In_Delivery. The order stays in Live, so refetch
+  /// rather than patching it locally — that also picks up anything
+  /// else the backend changed alongside the status. Throws on failure,
+  /// like [markDelivered].
+  Future<void> startDelivery(int orderId) async {
+    await _repository.startDelivery(orderId);
+    await refresh();
+  }
+
   /// Calls the API, then removes the order from Live immediately
   /// rather than waiting for the next 30s poll, and invalidates
   /// historyProvider so the now-Delivered order is already there

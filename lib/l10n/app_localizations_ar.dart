@@ -75,6 +75,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get liveView => 'عرض';
 
   @override
+  String get liveStartDelivery => 'بدء التوصيل';
+
+  @override
+  String get liveStartDeliveryFailed => 'تعذّر بدء التوصيل';
+
+  @override
   String get liveMarkDelivered => 'تم التسليم';
 
   @override

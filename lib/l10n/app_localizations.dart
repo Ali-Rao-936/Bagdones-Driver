@@ -224,6 +224,18 @@ abstract class AppLocalizations {
   /// **'View'**
   String get liveView;
 
+  /// No description provided for @liveStartDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Start delivery'**
+  String get liveStartDelivery;
+
+  /// No description provided for @liveStartDeliveryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start delivery'**
+  String get liveStartDeliveryFailed;
+
   /// No description provided for @liveMarkDelivered.
   ///
   /// In en, this message translates to:
